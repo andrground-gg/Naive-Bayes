@@ -1,6 +1,6 @@
 import numpy as np
 
-class NaiveBayes:
+class GaussianNaiveBayes:
     def __init__(self, log=False):
         self.__classes = None
         self.__class_priors = None
