@@ -1,49 +1,40 @@
 import numpy as np
+import pandas as pd
 
-class GaussianNaiveBayes:
-    def __init__(self, log=False):
+class NaiveBayes:
+    def __init__(self):
         self.__classes = None
         self.__class_priors = None
-        self.__means = {}
-        self.__variances = {}
-        self.__log = log
+        self.__classes_amounts = None
+        self.__data = None
 
     def fit(self, X, y):
         self.__classes = np.unique(y)
         self.__class_priors = [len(X[y == c]) / len(X) for c in self.__classes]
-        for c in self.__classes:
-            X_c = X[y == c]
-            self.__means[c] = X_c.mean(axis=0)
-            self.__variances[c] = X_c.var(axis=0)
-
-        if (self.__log):
-            print('Classes: ', self.__classes)
-            print('Class priors: ', self.__class_priors)
-            print('Means: ', self.__means)
-            print('Variances: ', self.__variances)
-
-    def predict(self, X):
-        probabilities = self.__calculate_class_probabilities(X)
-        predictions = probabilities[1] > probabilities[0]
-        return predictions.astype('int')
-    
-    def __calculate_likelihood(self, x, mean, variance):
-        exponent = np.exp(-(x - mean) ** 2 / (2 * variance))
-        return (1 / (np.sqrt(2 * np.pi * variance))) * exponent
-    
-    def __calculate_class_probabilities(self, x):
-        probabilities = {}
-        for c in self.__classes:
-            likelihood = np.prod(self.__calculate_likelihood(x, self.__means[c], self.__variances[c]), axis=1)
-            probabilities[c] = self.__class_priors[c] * likelihood
-
-        if (self.__log):
-            print('Class probabilities: ', probabilities)
-
-        return probabilities
+        self.__classes_amounts = [len(X[y == c]) for c in self.__classes]
+        dict = {}
+        for col in X.columns:
+            dict[col] = {}
+            for c in np.unique(X[col]):
+                dict[col][c] = tuple([len(X[(X[col] == c) & (y == 0)]), len(X[(X[col] == c) & (y == 1)])])
         
+        self.__data = dict
+        
+    def predict(self, X):
+        predictions = []
+        for index, row in X.iterrows():
+            neg_prob, pos_prob = self.__class_priors[0], self.__class_priors[1]
+            for key in self.__data.keys():
+                neg_prob *= self.__data[key][X[key][index]][0] / self.__classes_amounts[0] if self.__data[key][X[key][index]][0] != 0 else 1 / len(X)
+                pos_prob *= self.__data[key][X[key][index]][1] / self.__classes_amounts[1] if self.__data[key][X[key][index]][1] != 0 else 1 / len(X)
 
-    
-    
+            predictions.append(0 if neg_prob > pos_prob else 1)
 
+        return np.array(predictions, dtype=np.int64)
 
+    def __calculate_likelihood(self, x, mean, variance):
+        pass
+
+    def __calculate_class_probabilities(self, x):
+        pass
+        
