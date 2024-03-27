@@ -25,8 +25,8 @@ class NaiveBayes:
         for index, row in X.iterrows():
             neg_prob, pos_prob = self.__class_priors[0], self.__class_priors[1]
             for key in self.__data.keys():
-                neg_prob *= self.__data[key][X[key][index]][0] / self.__classes_amounts[0] if self.__data[key][X[key][index]][0] != 0 else 1 / len(X)
-                pos_prob *= self.__data[key][X[key][index]][1] / self.__classes_amounts[1] if self.__data[key][X[key][index]][1] != 0 else 1 / len(X)
+                neg_prob *= self.__data[key][X[key][index]][0] / self.__classes_amounts[0] if X[key][index] in self.__data[key] and self.__data[key][X[key][index]][0] != 0 else 1 / len(X)
+                pos_prob *= self.__data[key][X[key][index]][1] / self.__classes_amounts[1] if X[key][index] in self.__data[key] and self.__data[key][X[key][index]][1] != 0 else 1 / len(X)
 
             predictions.append(0 if neg_prob > pos_prob else 1)
 
